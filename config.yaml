@@ -1,0 +1,103 @@
+# Machine Learning Pipeline Configuration
+# AIAP Assessment 22 - Task 2
+
+# Data Configuration
+data:
+  db_url: "https://techassessment.blob.core.windows.net/aiap22-assessment-data/phishing.db"
+  temp_db_path: "data/phishing.db"
+  test_size: 0.2
+  random_state: 42
+  stratify: true
+
+output:
+  results_dir: "results"
+  verbose: true
+  save_models: false  # Set to true to save trained models to disk
+  save_predictions: false  # Set to true to save predictions to disk
+
+# Preprocessing Configuration
+preprocessing:
+  scaler: "RobustScaler"  # Options: RobustScaler, StandardScaler
+  handle_missing: "median_imputation"
+  create_indicator: true  # Create LineOfCode_Missing indicator
+  onehot_drop: "first"
+  onehot_handle_unknown: "ignore"
+
+# Model Configuration
+models:
+  # List of models to train (set to [] to train all)
+  # Recommended streamlined set (4 models): Fast, diverse, and high-performing
+  # - LogisticRegression: Fast baseline, interpretable
+  # - RandomForest: Robust ensemble, interpretable, fast
+  # - GradientBoosting: Sequential boosting (for comparison)
+  # - XGBoost: Optimized gradient boosting framework
+  # 
+  # Removed models (redundant/slow):
+  # - SVM: Very slow, especially with hyperparameter tuning
+  # - KNN: Slow at prediction, usually not competitive
+  # - NeuralNetwork: Slower than tree-based, rarely competitive on tabular data
+  # - LightGBM: Redundant with XGBoost (very similar performance)
+  # - NaiveBayes: Simple baseline, usually underperforms on structured data
+  enabled:
+    - LogisticRegression
+    - RandomForest
+    - GradientBoosting
+    - XGBoost
+  
+  # Model-specific hyperparameters
+  LogisticRegression:
+    max_iter: 1000
+    random_state: 42
+    solver: "lbfgs"
+  
+  RandomForest:
+    n_estimators: 100
+    max_depth: 10
+    random_state: 42
+    n_jobs: -1
+  
+  GradientBoosting:
+    n_estimators: 100
+    learning_rate: 0.1
+    max_depth: 5
+    random_state: 42
+  
+  XGBoost:
+    n_estimators: 100
+    learning_rate: 0.1
+    max_depth: 5
+    random_state: 42
+
+# Hyperparameter Tuning Configuration
+hyperparameter_tuning:
+  enabled: true  # Set to true for production, but expect longer runtime (3-5 mins for 4 models with tuning)
+  method: "RandomizedSearchCV"  # Options: RandomizedSearchCV, GridSearchCV
+  n_iter: 50
+  cv: 5
+  n_jobs: -1
+  random_state: 42
+
+# Cross-Validation Configuration
+cross_validation:
+  enabled: true
+  cv_folds: 5
+  scoring:
+    - accuracy
+    - roc_auc
+    - f1
+
+# Evaluation Configuration
+evaluation:
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1
+    - specificity
+    - fpr
+    - fnr
+    - balanced_accuracy
+    - mcc
+    - roc_auc
+    - pr_auc
+

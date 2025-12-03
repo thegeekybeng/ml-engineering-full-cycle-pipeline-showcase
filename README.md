@@ -507,6 +507,86 @@ Comprehensive documentation is available in the `docs/` directory:
 
 ---
 
+## 📄 Model Card
+
+A detailed model card describing the phishing classification pipeline — including dataset, preprocessing, model portfolio, evaluation metrics, limitations, and governance considerations — is available at:
+
+- [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md)
+
+This is written in a standard model-card style suitable for architects, reviewers, and risk owners.
+
+---
+
+## 🧱 Architecture Diagrams
+
+High-level system, data flow, and pipeline sequence diagrams are provided in:
+
+- [`docs/architecture/DIAGRAM_SYSTEM_OVERVIEW.md`](docs/architecture/DIAGRAM_SYSTEM_OVERVIEW.md)
+
+These Mermaid-based diagrams are aligned with the `SYSTEM_DESIGN_OVERVIEW` and `PIPELINE_ARCHITECTURE` documents and reflect the config-driven, modular structure of the pipeline.
+
+---
+
+## 🚀 Serving & Deployment
+
+This repository includes a minimal FastAPI-based inference service and a Dockerfile for containerized deployment.
+
+### Installation (API)
+
+```bash
+cd /path/to/ml-engineering-full-cycle-pipeline-showcase
+
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### Running the FastAPI Server
+
+1. **Train and persist a model** (if not already done):
+
+   ```bash
+   python src/pipeline.py --config config/config.yaml
+   ```
+
+   Ensure `output.save_models` is enabled in `config/config.yaml` so that models are saved to the `results` directory.
+
+2. **Start the API**:
+
+   ```bash
+   uvicorn api.serve:app --host 0.0.0.0 --port 8000
+   ```
+
+   - `GET /health` returns a simple health payload with the loaded model name.
+   - `POST /predict` accepts a JSON body with a `features` object and returns a prediction and optional probability.
+
+### Docker Instructions
+
+1. **Build the image**:
+
+   ```bash
+   docker build -t phishing-ml-api:latest .
+   ```
+
+2. **Run the container**:
+
+   ```bash
+   docker run --rm -p 8000:8000 \
+     -e MODEL_NAME=RandomForest \
+     -v "$(pwd)/results:/app/results" \
+     phishing-ml-api:latest
+   ```
+
+   The volume mount ensures the container can access the trained model artifacts from the host `results` directory.
+
+For more detailed deployment patterns (VMs, orchestrators, and MLOps integration), see:
+
+- [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md)
+
+---
+
 ## License
 
 This project is provided as-is for educational and demonstration purposes. Please refer to the repository's license file for specific terms and conditions.

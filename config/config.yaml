@@ -1,9 +1,10 @@
 # Machine Learning Pipeline Configuration
-# AIAP Assessment 22 - Task 2
+# Phishing Detection ML Pipeline - Configuration
 
 # Data Configuration
 data:
-  db_url: "https://techassessment.blob.core.windows.net/aiap22-assessment-data/phishing.db"
+  # Location of the phishing dataset. Replace with your own storage endpoint.
+  db_url: "https://YOUR_STORAGE_ENDPOINT/phishing.db"
   temp_db_path: "data/phishing.db"
   test_size: 0.2
   random_state: 42

@@ -1,12 +1,12 @@
 ================================================
-AIAP Assessment 22 - Machine Learning Pipeline Execution
+Phishing Detection - Machine Learning Pipeline Execution
 ================================================
 
 Python version: Python 3.13.9
 
 Found virtual environment: venv
 Virtual environment activated.
-Python: /Users/ymca/_dev_work_/_AIAP-assessment/venv/bin/python
+Python: /Users/ymca/_dev_work_/venv/bin/python
 
 Checking critical dependencies...
 ✅ Critical dependencies are installed.
@@ -19,7 +19,7 @@ Executing Machine Learning Pipeline...
 MACHINE LEARNING PIPELINE INITIALIZED
 ======================================================================
 Config loaded: 7 sections
-Database URL: https://techassessment.blob.core.windows.net/aiap22-assessment-data/phishing.db
+Database URL: https://YOUR_STORAGE_ENDPOINT/phishing.db
 Test Size: 0.2
 Random State: 42
 Enabled Models: 4 models
@@ -352,7 +352,7 @@ STEP 7: BEST MODEL SELECTION
 
 ======================================================================
 
-[Step 7/7] Generating final assessment...
+[Step 7/7] Generating final validation and reporting...
 
 ======================================================================
 DETAILED CLASSIFICATION REPORT: XGBoost

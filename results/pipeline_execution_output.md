@@ -10,7 +10,7 @@
 MACHINE LEARNING PIPELINE INITIALIZED
 ======================================================================
 Config loaded: 7 sections
-Database URL: https://techassessment.blob.core.windows.net/aiap22-assessment-data/phishing.db
+Database URL: https://YOUR_STORAGE_ENDPOINT/phishing.db
 Test Size: 0.2
 Random State: 42
 Enabled Models: 4 models
@@ -343,7 +343,7 @@ STEP 7: BEST MODEL SELECTION
 
 ======================================================================
 
-[Step 7/7] Generating final assessment...
+[Step 7/7] Generating final validation and reporting...
 
 ======================================================================
 DETAILED CLASSIFICATION REPORT: XGBoost

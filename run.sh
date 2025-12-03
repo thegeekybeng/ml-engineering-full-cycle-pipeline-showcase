@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# AIAP Assessment 22 - End-to-End Pipeline Script
-# This script runs the complete assessment pipeline
+# Enterprise Phishing Detection ML Pipeline Script
+# This script runs the complete machine learning pipeline end-to-end
 
 set -e  # Exit on error
 
 echo "================================================"
-echo "AIAP Assessment 22 - Machine Learning Pipeline Execution"
+echo "Phishing Detection - Machine Learning Pipeline Execution"
 echo "================================================"
 echo ""
 
@@ -92,14 +92,14 @@ else
     echo ""
 fi
 
-# Check if required files exist
+# Check if optional analysis notebook exists
 if [ ! -f "eda.ipynb" ]; then
-    echo "⚠️  Warning: eda.ipynb not found. EDA notebook is required for Task 1."
+    echo "⚠️  Warning: eda.ipynb not found. Exploratory analysis notebook is recommended for local analysis."
 fi
 
 # Check if src/ directory exists and has required modules
 if [ ! -d "src" ]; then
-    echo "❌ Error: src/ directory not found. Task 2 MLP modules are required."
+    echo "❌ Error: src/ directory not found. ML pipeline modules are required."
     exit 1
 fi
 

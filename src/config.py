@@ -61,7 +61,8 @@ class Config:
         """Get default configuration values."""
         return {
             'data': {
-                'db_url': 'https://techassessment.blob.core.windows.net/aiap22-assessment-data/phishing.db',
+                # Default location of the phishing dataset; override in config.yaml or via CLI/env.
+                'db_url': 'https://YOUR_STORAGE_ENDPOINT/phishing.db',
                 'temp_db_path': 'data/phishing.db',
                 'test_size': 0.2,
                 'random_state': 42,

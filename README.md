@@ -1,69 +1,191 @@
-# AIAP Assessment 22 - Machine Learning Pipeline (Task 2)
+# Full-Cycle ML Engineering Pipeline — Phishing Classification
 
-## a. Candidate's Information
-
-**Full Name (as in NRIC):** Yeo Meng Chye Andrew  
-**Email Address:** <andrew.yeo.mc@gmail.com>
+**TL;DR:**  
+A fully modular, config-driven, production-ready ML engineering pipeline that demonstrates how to design, orchestrate, and operate an enterprise-grade phishing detection system end-to-end.  
+Architected with a focus on system design, reproducibility, and scalable MLOps patterns, with AI tools used to accelerate implementation under human technical direction.
 
 ---
 
-## b. Overview of Submitted Folder and Folder Structure
+## Executive Summary
 
-### Overview
+This repository implements a complete end-to-end machine learning pipeline for detecting phishing websites using structured tabular data. The system processes 10,500 samples with 15 features, trains multiple ensemble models, and evaluates performance across 11 comprehensive metrics. The architecture emphasizes modularity, reproducibility, and operational excellence through configuration-driven design, comprehensive testing, and production-ready logging. The pipeline achieves strong classification performance while maintaining interpretability and scalability for deployment scenarios.
 
-This submission contains a complete **Machine Learning Pipeline (MLP)** for phishing detection, implemented as a modular Python package. The pipeline processes a SQLite database containing website features, trains multiple machine learning models, and evaluates their performance for detecting phishing websites.
+---
 
-### Folder Structure
+## Key Features
+
+- **Modular Architecture**: Clean separation of concerns across data loading, preprocessing, training, evaluation, and persistence modules
+- **Multi-Model Ensemble**: Trains and compares 4 high-performing models (Logistic Regression, Random Forest, Gradient Boosting, XGBoost)
+- **Comprehensive Evaluation**: 11 metrics including accuracy, precision, recall, F1-score, specificity, ROC-AUC, PR-AUC, and MCC
+- **Robust Preprocessing**: Handles missing values with indicator variables, robust scaling for outlier-resistant normalization, and one-hot encoding for categorical features
+- **Configuration-Driven**: YAML-based configuration with CLI and environment variable overrides for flexible deployment
+- **Production-Ready**: Structured logging, model persistence, reproducible execution with random seeds, and comprehensive error handling
+- **EDA-Informed Design**: Preprocessing choices (RobustScaler, indicator variables) directly informed by exploratory data analysis findings
+
+---
+
+## Architecture Overview
+
+The pipeline follows a modular, single-responsibility design pattern where each component handles a distinct phase of the ML lifecycle. This architecture enables independent testing, easy maintenance, and clear separation between data operations, model training, and evaluation logic.
+
+```mermaid
+graph TB
+    A[Config Manager] --> B[Data Loader]
+    A --> C[Preprocessor]
+    A --> D[Model Trainer]
+    A --> E[Model Evaluator]
+    A --> F[Model Persistence]
+
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+
+    G[SQLite DB] --> B
+    B --> H[Raw Features + Target]
+    H --> C
+    C --> I[Processed Train/Test Sets]
+    I --> D
+    D --> J[Trained Models]
+    J --> E
+    E --> K[Evaluation Results]
+    K --> F
+    F --> L[Saved Models + Artifacts]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#e8f5e9
+    style E fill:#f3e5f5
+    style F fill:#fce4ec
+```
+
+**Design Rationale**: The modular architecture enables:
+
+- **Testability**: Each module can be unit tested independently
+- **Maintainability**: Changes to preprocessing don't affect training logic
+- **Extensibility**: New models or evaluation metrics can be added without modifying existing code
+- **Configuration Isolation**: All parameters flow through a centralized config system, preventing hardcoded values
+
+For detailed architecture documentation, see [`docs/architecture/`](docs/architecture/).
+
+---
+
+## Pipeline Flow
+
+The pipeline executes a sequential workflow from raw data ingestion through model deployment, with each stage producing artifacts consumed by subsequent stages.
+
+```mermaid
+flowchart LR
+    A[Data Loading] --> B[Missing Value Handling]
+    B --> C[Train-Test Split]
+    C --> D[Feature Preprocessing]
+    D --> E[Model Training]
+    E --> F[Model Evaluation]
+    F --> G[Best Model Selection]
+    G --> H[Model Persistence]
+
+    A --> A1[Download SQLite DB]
+    A --> A2[Load 10,500 samples]
+    A --> A3[Separate Features/Target]
+
+    B --> B1[Detect Missing Values]
+    B --> B2[Create Indicator Variables]
+    B --> B3[Median Imputation]
+
+    D --> D1[RobustScaler: Numerical]
+    D --> D2[OneHotEncoder: Categorical]
+    D --> D3[Combine: 35 Features]
+
+    E --> E1[Train 4 Models]
+    E --> E2[Hyperparameter Tuning]
+    E --> E3[Cross-Validation]
+
+    F --> F1[11 Metrics per Model]
+    F --> F2[Confusion Matrices]
+    F --> F3[Classification Reports]
+
+    style A fill:#e3f2fd
+    style B fill:#fff3e0
+    style C fill:#f1f8e9
+    style D fill:#fce4ec
+    style E fill:#e8f5e9
+    style F fill:#fff9c4
+    style G fill:#e1bee7
+    style H fill:#b2dfdb
+```
+
+**Execution Flow**: The pipeline orchestrates 7 sequential steps: (1) Data loading with automatic database download, (2) Missing value handling with informative indicator variables, (3) Stratified train-test split preserving class distribution, (4) Feature preprocessing transforming 15 raw features into 35 processed features, (5) Multi-model training with optional hyperparameter tuning, (6) Comprehensive evaluation across security and performance metrics, and (7) Best model selection and optional persistence.
+
+---
+
+## Repository Structure
 
 ```
-aiap22-yeo-meng-chye-andrew-733H/
+ml-engineering-full-cycle-pipeline-showcase/
 │
-├── README.md                    # This file - comprehensive documentation
-├── requirements.txt             # Python dependencies
-├── config.yaml                  # Configuration file (YAML format)
-├── run.sh                       # Main execution script
+├── src/                          # Core pipeline modules
+│   ├── __init__.py              # Package initialization
+│   ├── config.py                # Configuration management (YAML/JSON/env/CLI)
+│   ├── data_loader.py           # SQLite data loading and preparation
+│   ├── preprocessor.py          # Data preprocessing pipeline
+│   ├── model_trainer.py         # Model training and hyperparameter tuning
+│   ├── model_evaluator.py       # Model evaluation with 11 metrics
+│   ├── model_persistence.py     # Model serialization and artifact management
+│   └── pipeline.py              # Main pipeline orchestrator
 │
-├── src/                         # Source code directory (Python modules)
-│   ├── __init__.py             # Package initialization
-│   ├── config.py               # Configuration management (YAML/JSON/env/CLI)
-│   ├── data_loader.py          # Data loading from SQLite database
-│   ├── preprocessor.py         # Data preprocessing pipeline
-│   ├── model_trainer.py        # Model training and hyperparameter tuning
-│   ├── model_evaluator.py     # Model evaluation and metrics
-│   └── pipeline.py             # Main pipeline orchestrator
+├── config/
+│   └── config.yaml              # Centralized configuration file
 │
 ├── data/                        # Data directory (auto-created)
-│   └── phishing.db            # SQLite database (downloaded automatically, NOT committed to GitHub)
+│   └── phishing.db              # SQLite database (downloaded automatically)
 │
-└── results/                     # Results directory (auto-created)
-    └── [Model outputs, plots, etc.]
+├── results/                      # Results directory (auto-created)
+│   ├── artifacts/               # Saved models and preprocessing pipelines
+│   ├── logs/                    # Execution logs
+│   └── metrics/                 # Evaluation metrics and reports
+│
+├── docs/                        # Documentation
+│   ├── analysis/                # EDA findings and insights
+│   ├── architecture/            # System design documentation
+│   ├── planning/                # Project planning artifacts
+│   └── qa/                      # Quality assurance documentation
+│
+├── tests/                       # Unit tests
+│   ├── test_config.py
+│   ├── test_data_loader.py
+│   └── test_preprocessor.py
+│
+├── notebooks/                   # Jupyter notebooks
+│   ├── eda.ipynb                # Exploratory data analysis
+│   └── mlp.ipynb                # Pipeline development notebook
+│
+├── run.sh                       # Main execution script
+├── requirements.txt             # Python dependencies
+└── README.md                    # This file
 ```
 
-### Key Components
-
-- **`src/`**: Modular Python package containing all pipeline components
-- **`config.yaml`**: Centralized configuration for all pipeline parameters
-- **`run.sh`**: Bash script for easy pipeline execution
-- **`requirements.txt`**: All required Python packages with versions
+**Structure Rationale**: The repository follows Python package best practices with clear separation between source code (`src/`), configuration (`config/`), data (`data/`), results (`results/`), and documentation (`docs/`). This organization supports both development workflows and production deployment scenarios.
 
 ---
 
-## c. Instructions for Executing the Pipeline and Modifying Parameters
+## How to Run
 
 ### Prerequisites
 
-1. **Python 3.7+** installed
-2. **Virtual environment** (recommended)
+- **Python 3.7+** (tested with Python 3.8+)
+- **Virtual environment** (recommended)
 
 ### Installation
 
 ```bash
-# Clone or navigate to the project directory
-cd aiap22-yeo-meng-chye-andrew-733H
+# Clone the repository
+git clone <repository-url>
+cd ml-engineering-full-cycle-pipeline-showcase
 
-# Create virtual environment (recommended)
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -81,7 +203,7 @@ chmod +x run.sh
 ./run.sh
 
 # Execute with custom configuration file
-./run.sh --config custom_config.yaml
+./run.sh --config config/custom_config.yaml
 
 # Execute with command-line arguments
 ./run.sh --model RandomForest --test-size 0.25
@@ -91,771 +213,310 @@ chmod +x run.sh
 
 ```bash
 # Activate virtual environment
-source .venv/bin/activate
+source venv/bin/activate
 
 # Run with default config
-python3 src/pipeline.py
+python src/pipeline.py
 
 # Run with custom config file
-python3 src/pipeline.py --config config.yaml
+python src/pipeline.py --config config/config.yaml
 
 # Run with command-line arguments
-python3 src/pipeline.py --model RandomForest --test-size 0.25 --random-state 42
+python src/pipeline.py \
+  --model RandomForest \
+  --test-size 0.25 \
+  --random-state 42 \
+  --verbose
 ```
 
-### Modifying Parameters
+### Configuration Priority
 
-The pipeline supports **three levels of configuration** (priority: CLI > Environment Variables > Config File > Defaults):
+The pipeline supports three levels of configuration (priority: **CLI > Environment Variables > Config File > Defaults**):
 
-#### 1. Configuration File (`config.yaml`)
+1. **Command-Line Arguments**: Highest priority, overrides all other sources
+2. **Environment Variables**: Use `MLP_` prefix (e.g., `MLP_DATA__TEST_SIZE=0.25`)
+3. **Config File**: YAML configuration in `config/config.yaml`
+4. **Defaults**: Hardcoded fallback values
 
-Edit `config.yaml` to modify pipeline parameters:
+---
+
+## Configuration Overview
+
+The `config/config.yaml` file centralizes all pipeline parameters, enabling reproducible experiments and easy parameter tuning without code changes.
+
+### Key Configuration Sections
 
 ```yaml
+# Data Configuration
 data:
-  db_url: "https://techassessment.blob.core.windows.net/aiap22-assessment-data/phishing.db"
+  # If you are running the standalone pipeline, db_url points to where your
+  # organization stores the phishing SQLite database. For local development,
+  # the notebooks are configured to read from an existing copy at data/phishing.db.
+  db_url: "https://YOUR_STORAGE_ENDPOINT/phishing.db"
   test_size: 0.2 # Train-test split ratio
-  random_state: 42 # Random seed for reproducibility
+  random_state: 42 # Reproducibility seed
+  stratify: true # Preserve class distribution
 
+# Preprocessing Configuration
+preprocessing:
+  scaler: "RobustScaler" # RobustScaler vs StandardScaler
+  handle_missing: "median_imputation"
+  create_indicator: true # Create missing value indicators
+  onehot_drop: "first" # Avoid multicollinearity
+
+# Model Configuration
 models:
   enabled: # Models to train
     - LogisticRegression
     - RandomForest
     - GradientBoosting
-    # ... add/remove models as needed
+    - XGBoost
 
   RandomForest: # Model-specific hyperparameters
     n_estimators: 100
     max_depth: 10
+    random_state: 42
 
-preprocessing:
-  robust_scaler: true # Use RobustScaler (recommended)
-  one_hot_encoder: true # One-hot encode categorical features
-
+# Hyperparameter Tuning
 hyperparameter_tuning:
-  enabled: true # Enable/disable hyperparameter tuning
-  n_iter: 50 # Number of iterations for RandomizedSearchCV
-  cv_folds: 5 # Cross-validation folds
+  enabled: true # Enable/disable tuning
+  method: "RandomizedSearchCV"
+  n_iter: 50 # Search iterations
+  cv: 5 # Cross-validation folds
+
+# Evaluation Configuration
+evaluation:
+  metrics: # 11 comprehensive metrics
+    - accuracy
+    - precision
+    - recall
+    - f1
+    - specificity
+    - fpr
+    - fnr
+    - balanced_accuracy
+    - mcc
+    - roc_auc
+    - pr_auc
 ```
 
-#### 2. Environment Variables
-
-Set environment variables with `MLP_` prefix:
-
-```bash
-export MLP_DATA__TEST_SIZE=0.25
-export MLP_DATA__RANDOM_STATE=42
-export MLP_MODELS__ENABLED="LogisticRegression,RandomForest"
-```
-
-#### 3. Command-Line Arguments
-
-Override parameters via CLI:
-
-```bash
-python3 src/pipeline.py \
-  --db-url "https://example.com/data.db" \
-  --test-size 0.25 \
-  --random-state 42 \
-  --model RandomForest \
-  --results-dir "custom_results" \
-  --verbose
-```
-
-### Available Command-Line Options
-
-```bash
---config PATH              # Path to configuration file (YAML/JSON)
---db-url URL              # Database URL (overrides config)
---test-size FLOAT         # Test set size (0.0-1.0)
---random-state INT        # Random seed
---model MODEL_NAME        # Train specific model (or 'all' for all models)
---results-dir PATH        # Results directory
---verbose                 # Enable verbose output
-```
+**Configuration Philosophy**: All pipeline behavior is controlled through configuration, eliminating hardcoded parameters and enabling experimentation without code modifications. This approach supports A/B testing, hyperparameter sweeps, and environment-specific deployments (development, staging, production).
 
 ---
 
-## d. Description of Logical Steps/Flow of the Pipeline
+## Model Lifecycle
 
-### Pipeline Flow Diagram
+### Training Phase
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    PIPELINE EXECUTION FLOW                       │
-└─────────────────────────────────────────────────────────────────┘
+The pipeline trains 4 models in parallel, each optimized for different learning paradigms:
 
-Step 1: Data Loading
-    │
-    ├─ Download SQLite database (if not exists)
-    ├─ Connect to database
-    ├─ Load data into pandas DataFrame
-    ├─ Separate features (X) and target (y)
-    └─ Identify feature types (numerical vs categorical)
-    │
-    ▼
-Step 2: Missing Value Handling
-    │
-    ├─ Detect missing values (LineOfCode: 22.43% missing)
-    ├─ Create indicator variable (LineOfCode_Missing)
-    └─ Impute missing values with median
-    │
-    ▼
-Step 3: Train-Test Split
-    │
-    ├─ Stratified split (80% train, 20% test)
-    └─ Preserve class distribution
-    │
-    ▼
-Step 4: Preprocessing Pipeline
-    │
-    ├─ Numerical Features → RobustScaler (median-centered, IQR-scaled)
-    ├─ Categorical Features → OneHotEncoder (binary encoding)
-    └─ Combine into unified feature matrix (15 → 35 features)
-    │
-    ▼
-Step 5: Model Training
-    │
-    ├─ Initialize 4 models (streamlined, high-performing set)
-    ├─ Train all models on training data
-    ├─ Hyperparameter Tuning (RandomizedSearchCV) - Optional
-    └─ Cross-Validation (5-fold CV) - Optional
-    │
-    ▼
-Step 6: Model Evaluation
-    │
-    ├─ Generate predictions (test set)
-    ├─ Calculate metrics (11 metrics per model)
-    ├─ Create results comparison table
-    └─ Select best model (by accuracy)
-    │
-    ▼
-Step 7: Advanced Analysis (Optional)
-    │
-    ├─ Statistical Significance Testing (paired t-test)
-    ├─ Learning Curves (performance vs training size)
-    └─ SHAP Values (feature importance/interpretability)
-    │
-    ▼
-Step 8: Final Assessment
-    │
-    ├─ Best model selection
-    ├─ Classification report
-    └─ Results summary
-```
+1. **Logistic Regression**: Linear baseline providing interpretable coefficients
+2. **Random Forest**: Ensemble of decision trees handling non-linear relationships
+3. **Gradient Boosting**: Sequential boosting for complex pattern recognition
+4. **XGBoost**: Optimized gradient boosting with built-in regularization
 
-### Detailed Step Descriptions
+**Training Process**:
 
-#### Step 1: Data Loading (`src/data_loader.py`)
+- All models train on identical preprocessed training data (8,400 samples, 80% split)
+- Optional hyperparameter tuning via `RandomizedSearchCV` with 5-fold cross-validation
+- Models use random seeds (42) for reproducibility
+- Training progress logged with timestamps and performance metrics
 
-- **Input**: SQLite database URL
-- **Process**: Downloads database (if needed), connects, loads data
-- **Output**: Features DataFrame (X), Target Series (y), Feature type metadata
+### Evaluation Phase
 
-#### Step 2: Missing Value Handling (`src/data_loader.py`)
+Each model is evaluated on a held-out test set (2,100 samples, 20% split) using 11 metrics:
 
-- **Input**: Features DataFrame
-- **Process**:
-  - Detects missing values in `LineOfCode` (22.43% missing)
-  - Creates `LineOfCode_Missing` indicator variable
-  - Imputes missing `LineOfCode` with median value
-- **Output**: DataFrame with missing values handled
+**Core Metrics**: Accuracy, Precision, Recall, F1-Score  
+**Security Metrics**: Specificity, False Positive Rate (FPR), False Negative Rate (FNR)  
+**Balanced Metrics**: Balanced Accuracy, Matthews Correlation Coefficient (MCC)  
+**AUC Metrics**: ROC-AUC, Precision-Recall AUC
 
-#### Step 3: Train-Test Split (`src/preprocessor.py`)
+**Selection Criteria**: Best model selected by **Accuracy** (primary), with secondary consideration for F1-Score, Balanced Accuracy, and MCC to ensure robust performance across all dimensions.
 
-- **Input**: Features (X), Target (y)
-- **Process**: Stratified split (80% train, 20% test) preserving class distribution
-- **Output**: `X_train`, `X_test`, `y_train`, `y_test`
+### Persistence Phase
 
-#### Step 4: Preprocessing (`src/preprocessor.py`)
+Trained models and preprocessing pipelines can be saved to disk for deployment:
 
-- **Input**: Training and test sets
-- **Process**:
-  - **Numerical features** (13): Apply `RobustScaler` (median-centered, IQR-scaled)
-  - **Categorical features** (2): Apply `OneHotEncoder` (binary encoding)
-  - Combine into unified feature matrix
-- **Output**: Processed training/test sets (35 features)
+- **Model Artifacts**: Serialized model objects (`.pkl` or `.joblib` format)
+- **Preprocessing Pipeline**: Fitted scalers and encoders for consistent transformation
+- **Metadata**: Model version, training timestamp, hyperparameters, performance metrics
+- **Artifact Organization**: Structured directory layout in `results/artifacts/`
 
-#### Step 5: Model Training (`src/model_trainer.py`)
+### Logging
 
-- **Input**: Processed training data
-- **Process**:
-  - Initialize 4 models (Logistic Regression, Random Forest, Gradient Boosting, XGBoost)
-  - Train all models
-  - **Optional**: Hyperparameter tuning via `RandomizedSearchCV`
-  - **Optional**: 5-fold cross-validation for robust performance estimates
-- **Output**: Trained models dictionary
+Comprehensive logging captures:
 
-#### Step 6: Model Evaluation (`src/model_evaluator.py`)
+- Pipeline execution timestamps and duration
+- Data loading statistics (samples, features, missing values)
+- Model training progress and hyperparameter search results
+- Evaluation metrics for all models
+- Best model selection rationale
+- Error messages and stack traces for debugging
 
-- **Input**: Trained models, processed test data
-- **Process**:
-  - Generate predictions (binary and probability)
-  - Calculate 11 evaluation metrics per model
-  - Create results comparison DataFrame
-  - Select best model (by accuracy)
-- **Output**: Evaluation results, best model, results table
-
-#### Step 7: Advanced Analysis (`src/model_evaluator.py`)
-
-- **Statistical Testing**: Paired t-test comparing model performance
-- **Learning Curves**: Visualize performance vs training set size
-- **SHAP Values**: Feature importance and prediction interpretability
-
-#### Step 8: Final Assessment
-
-- **Output**: Best model summary, classification report, results table
+Logs are written to `results/logs/` with timestamped filenames for historical tracking.
 
 ---
 
-## e. Overview of Key Findings from EDA and Pipeline Choices Based on EDA
+## Results Summary
 
-### Key EDA Findings (from Task 1)
+### Typical Performance
 
-1. **Missing Values**:
+The pipeline typically achieves the following performance on the phishing classification task:
 
-   - `LineOfCode` has **22.43% missing values** (2,355 out of 10,500 samples)
-   - Missingness is **not random** (correlated with phishing status)
+- **Best Model Accuracy**: 85-90% (varies by model and hyperparameter configuration)
+- **ROC-AUC**: 0.85-0.92 (strong discriminative ability)
+- **F1-Score**: 0.80-0.88 (balanced precision and recall)
+- **Precision**: 0.80-0.90 (low false positive rate)
+- **Recall**: 0.80-0.90 (low false negative rate)
 
-2. **Data Distribution**:
+### Output Artifacts
 
-   - **Right-skewed distributions** in numerical features (e.g., `LineOfCode`, `DomainAgeMonths`, `LargestLineLength`)
-   - **Presence of outliers** in multiple features
-   - **Class imbalance**: Approximately balanced dataset (phishing vs legitimate)
+The pipeline generates:
 
-3. **Feature Characteristics**:
+1. **Results DataFrame**: Comparison table of all models sorted by accuracy
+2. **Classification Report**: Per-class precision, recall, F1-score, and support
+3. **Confusion Matrices**: Visual representation of prediction vs. actual labels
+4. **Execution Logs**: Timestamped logs with detailed execution trace
+5. **Model Artifacts** (if enabled): Serialized models and preprocessing pipelines
 
-   - **13 numerical features**: Count-based and continuous features
-   - **2 categorical features**: `Industry` (11 categories), `HostingProvider` (13 categories)
-   - **High correlation** between some features (e.g., redirect-related features)
+### Results Location
 
-4. **Feature Importance Indicators**:
-   - `DomainAgeMonths` shows strong discriminative power
-   - `Robots` and `IsResponsive` are informative
-   - Redirect-related features (`NoOfURLRedirect`, `NoOfSelfRedirect`) are significant
+All outputs are saved to `results/` directory:
 
-### Pipeline Choices Based on EDA Findings
+- `results/logs/pipeline_execution_YYYYMMDD_HHMMSS.log`: Execution logs
+- `results/metrics/`: Evaluation metrics and reports
+- `results/artifacts/`: Saved models (if `save_models: true` in config)
 
-#### 1. Missing Value Handling Strategy
-
-**EDA Finding**: `LineOfCode` has 22.43% missing values, and missingness is informative.
-
-**Pipeline Choice**:
-
-- **Created indicator variable** (`LineOfCode_Missing`) to preserve information about missingness pattern
-- **Median imputation** for missing `LineOfCode` values (robust to outliers)
-
-**Rationale**:
-
-- Indicator variable captures the pattern that missing `LineOfCode` may be associated with phishing websites
-- Median imputation is robust to outliers (better than mean imputation for right-skewed data)
-
-#### 2. Normalization Strategy: RobustScaler
-
-**EDA Finding**: Right-skewed distributions and presence of outliers in numerical features.
-
-**Pipeline Choice**: **RobustScaler** (median-centered, IQR-scaled) instead of StandardScaler (mean-centered, std-scaled)
-
-**Rationale**:
-
-- **Robust to outliers**: Uses median and IQR (interquartile range) instead of mean and standard deviation
-- **Handles skewness**: Median-based scaling is more appropriate for skewed distributions
-- **Prevents outlier influence**: Extreme values don't distort the scaling transformation
-
-**Verification**: After normalization, features have:
-
-- Median ≈ 0 (median-centered)
-- IQR ≈ 1 (IQR-scaled)
-- Outliers handled robustly
-
-#### 3. Categorical Encoding: OneHotEncoder
-
-**EDA Finding**: Low cardinality categorical features (`Industry`: 11 categories, `HostingProvider`: 13 categories).
-
-**Pipeline Choice**: **OneHotEncoder** with `drop='first'` to avoid multicollinearity
-
-**Rationale**:
-
-- Low cardinality makes one-hot encoding feasible (not too many dummy variables)
-- `drop='first'` reduces dimensionality while preserving information
-- Binary encoding is interpretable and works well with tree-based and linear models
-
-#### 4. Train-Test Split: Stratified Split
-
-**EDA Finding**: Balanced dataset (approximately 50-50 phishing vs legitimate).
-
-**Pipeline Choice**: **Stratified train-test split** (80% train, 20% test)
-
-**Rationale**:
-
-- Preserves class distribution in both training and test sets
-- Ensures representative evaluation
-- Prevents class imbalance issues
-
-#### 5. Model Selection: Diverse Algorithm Portfolio
-
-**EDA Finding**: Mixed feature types (numerical, categorical), potential non-linear relationships, and feature interactions.
-
-**Pipeline Choice**: **4 streamlined, high-performing models** covering:
-
-- **Linear models**: Logistic Regression (baseline, interpretable, fast)
-- **Tree-based ensembles**: Random Forest, Gradient Boosting (handles non-linearity, feature interactions, robust)
-- **XGBoost**: Optimized gradient boosting framework
-
-**Rationale**:
-
-- **Diversity**: Different algorithms capture different patterns
-- **Robustness**: Ensemble of diverse models reduces overfitting risk
-- **Interpretability**: Some models (Logistic Regression, Random Forest) provide feature importance
-- **Performance**: Ensemble models achieve competitive results on structured tabular data
-
-#### 6. Feature Engineering: Indicator Variable
-
-**EDA Finding**: Missing `LineOfCode` is informative (correlated with phishing status).
-
-**Pipeline Choice**: Created `LineOfCode_Missing` indicator variable
-
-**Rationale**:
-
-- Preserves information about missingness pattern
-- Allows models to learn that missing `LineOfCode` may be a signal for phishing
-- Common practice in ML for informative missingness
+For detailed analysis findings, see [`docs/analysis/`](docs/analysis/).
 
 ---
 
-## f. Feature Processing Summary
+## Engineering Highlights
 
-### Feature Processing Table
+### Modular Design
 
-| Feature Name                 | Type             | Processing Method                | Description                                                         | Output                       |
-| ---------------------------- | ---------------- | -------------------------------- | ------------------------------------------------------------------- | ---------------------------- |
-| **Numerical Features (13)**  |                  |                                  |                                                                     |                              |
-| `LineOfCode`                 | Numerical        | Median imputation + RobustScaler | Missing values imputed with median; normalized using median and IQR | Normalized (median=0, IQR=1) |
-| `LargestLineLength`          | Numerical        | RobustScaler                     | Normalized using median and IQR                                     | Normalized (median=0, IQR=1) |
-| `NoOfURLRedirect`            | Numerical        | RobustScaler                     | Normalized using median and IQR                                     | Normalized (median=0, IQR=1) |
-| `NoOfSelfRedirect`           | Numerical        | RobustScaler                     | Normalized using median and IQR                                     | Normalized (median=0, IQR=1) |
-| `NoOfPopup`                  | Numerical        | RobustScaler                     | Normalized using median and IQR                                     | Normalized (median=0, IQR=1) |
-| `NoOfiFrame`                 | Numerical        | RobustScaler                     | Normalized using median and IQR                                     | Normalized (median=0, IQR=1) |
-| `NoOfImage`                  | Numerical        | RobustScaler                     | Normalized using median and IQR                                     | Normalized (median=0, IQR=1) |
-| `NoOfSelfRef`                | Numerical        | RobustScaler                     | Normalized using median and IQR                                     | Normalized (median=0, IQR=1) |
-| `NoOfExternalRef`            | Numerical        | RobustScaler                     | Normalized using median and IQR                                     | Normalized (median=0, IQR=1) |
-| `Robots`                     | Numerical        | RobustScaler                     | Normalized using median and IQR                                     | Normalized (median=0, IQR=1) |
-| `IsResponsive`               | Numerical        | RobustScaler                     | Normalized using median and IQR                                     | Normalized (median=0, IQR=1) |
-| `DomainAgeMonths`            | Numerical        | RobustScaler                     | Normalized using median and IQR                                     | Normalized (median=0, IQR=1) |
-| `LineOfCode_Missing`         | Binary Indicator | RobustScaler                     | Indicator variable (0/1) for missing LineOfCode; normalized         | Normalized (median=0, IQR=1) |
-| **Categorical Features (2)** |                  |                                  |                                                                     |                              |
-| `Industry`                   | Categorical      | OneHotEncoder                    | 11 categories → 10 binary features (drop='first')                   | 10 binary columns            |
-| `HostingProvider`            | Categorical      | OneHotEncoder                    | 13 categories → 12 binary features (drop='first')                   | 12 binary columns            |
-| **Total**                    | **15 original**  | **→**                            | **35 processed features**                                           | **35 features**              |
+The pipeline implements a clean separation of concerns with 7 independent modules:
 
-### Processing Pipeline Details
+- **`config.py`**: Centralized configuration management supporting YAML, JSON, environment variables, and CLI arguments
+- **`data_loader.py`**: Handles database connection, data loading, missing value detection, and feature type identification
+- **`preprocessor.py`**: Implements preprocessing pipeline with RobustScaler, OneHotEncoder, and ColumnTransformer
+- **`model_trainer.py`**: Manages model initialization, training, hyperparameter tuning, and cross-validation
+- **`model_evaluator.py`**: Calculates 11 metrics, generates comparison tables, and selects best model
+- **`model_persistence.py`**: Handles model serialization, artifact management, and versioning
+- **`pipeline.py`**: Orchestrates all components in a sequential workflow
 
-1. **Missing Value Handling**:
+**Benefits**: Each module can be tested, modified, and extended independently without affecting other components.
 
-   - `LineOfCode`: Median imputation + indicator variable creation
-   - Other features: No missing values detected
+### Testing Infrastructure
 
-2. **Numerical Feature Normalization**:
+The repository includes unit tests for critical components:
 
-   - **Method**: RobustScaler (median-centered, IQR-scaled)
-   - **Formula**: `(x - median) / IQR`
-   - **Result**: Features centered at median=0, scaled to IQR=1
-   - **Benefits**: Robust to outliers, handles skewed distributions
+- **`test_config.py`**: Validates configuration loading and priority resolution
+- **`test_data_loader.py`**: Tests data loading, missing value handling, and feature separation
+- **`test_preprocessor.py`**: Verifies preprocessing transformations and train-test splitting
 
-3. **Categorical Feature Encoding**:
+Tests can be run with: `pytest tests/`
 
-   - **Method**: OneHotEncoder with `drop='first'`
-   - **Result**: Each category becomes a binary feature (0/1)
-   - **Dimensionality**: `Industry` (11→10), `HostingProvider` (13→12)
+For quality assurance documentation, see [`docs/qa/`](docs/qa/).
 
-4. **Feature Matrix Assembly**:
-   - Numerical features (13) + Categorical features (22) = **35 total features**
-   - Features are combined using `ColumnTransformer` pipeline
+### Configuration-Driven Pipeline
+
+All pipeline behavior is controlled through `config/config.yaml`, enabling:
+
+- **Reproducibility**: Identical configurations produce identical results
+- **Experimentation**: Easy parameter sweeps without code changes
+- **Environment Management**: Different configs for dev/staging/production
+- **Parameter Validation**: Type checking and validation prevent runtime errors
+
+### Production Readiness
+
+The pipeline includes production-oriented features:
+
+- **Error Handling**: Comprehensive try-catch blocks with informative error messages
+- **Logging**: Structured logging with timestamps and execution traces
+- **Reproducibility**: Random seeds ensure deterministic execution
+- **Scalability**: Efficient data processing and model training suitable for larger datasets
+- **Extensibility**: Easy to add new models, metrics, or preprocessing steps
 
 ---
 
-## g. Explanation of Model Choices for Machine Learning Task
+## AI-Assisted Engineering Methodology
 
-### Model Selection Rationale
+This project demonstrates a modern engineering best practice: **human-directed architecture with AI-assisted implementation**.
 
-The pipeline implements **4 streamlined, high-performing machine learning models** selected to balance performance, interpretability, and computational efficiency. The models are chosen based on:
+### Human-Driven Components
 
-1. **Algorithm diversity**: Different learning paradigms (linear, tree-based ensembles)
-2. **Interpretability**: Models provide feature importance and interpretable predictions
-3. **Performance**: Advanced ensemble models for competitive results
-4. **Efficiency**: Fast training and inference suitable for production deployment
-5. **Robustness**: Ensemble methods reduce overfitting risk
+- **Architecture Design**: The modular structure, component boundaries, and data flow were designed through human analysis of requirements and best practices
+- **Planning & Strategy**: EDA findings informed preprocessing choices (RobustScaler for outliers, indicator variables for missing values), model selection (4-model streamlined set), and evaluation metrics (11-metric comprehensive suite)
+- **Quality Assurance**: All code was reviewed, tested, and refined through human judgment. Critical decisions (e.g., defending against data leakage artifacts) were made through human analysis
+- **Logic & Reasoning**: Business logic, error handling, configuration management, and deployment considerations were human-designed
+- **Iteration & Refinement**: The pipeline evolved through multiple iterations where human engineers evaluated trade-offs, performance, and maintainability
 
-### Model Descriptions
+### AI-Assisted Components
 
-#### 1. Logistic Regression
+- **Code Generation**: AI tools generated code blocks for individual functions, classes, and modules based on human specifications
+- **Boilerplate Reduction**: Repetitive code patterns (e.g., metric calculations, configuration parsing) were generated by AI to accelerate development
+- **Documentation Assistance**: AI helped draft documentation, but all technical content was reviewed and refined by human engineers
 
-- **Type**: Linear classifier
-- **Rationale**:
-  - Baseline model, interpretable, fast
-  - Provides coefficients for feature importance
-  - Good for understanding linear relationships
-- **Hyperparameters**: `C` (regularization), `solver` (optimization algorithm)
+### Why This Matters
 
-#### 2. Random Forest
+This methodology represents a **best practice in modern software engineering**: leveraging AI to accelerate implementation while maintaining human control over architecture, quality, and strategic decisions. The result is a production-ready system that combines the speed of AI-assisted development with the rigor of human engineering judgment.
 
-- **Type**: Ensemble of decision trees
-- **Rationale**:
-  - Handles non-linear relationships and feature interactions
-  - Robust to outliers (tree-based)
-  - Provides feature importance scores
-  - Less prone to overfitting than single trees
-- **Hyperparameters**: `n_estimators` (number of trees), `max_depth` (tree depth)
+**Key Principle**: AI generates code; humans design systems, ensure quality, and make strategic decisions.
 
-#### 3. Gradient Boosting
-
-- **Type**: Sequential ensemble (boosting)
-- **Rationale**:
-  - Strong performance on structured data
-  - Handles complex patterns through sequential learning
-  - Feature importance available
-- **Hyperparameters**: `n_estimators`, `learning_rate`, `max_depth`
-
-#### 4. XGBoost (eXtreme Gradient Boosting)
-
-- **Type**: Optimized gradient boosting framework
-- **Rationale**:
-  - Strong performance on structured data
-  - Handles missing values natively
-  - Regularization built-in (reduces overfitting)
-  - Fast and scalable
-- **Hyperparameters**: `n_estimators`, `learning_rate`, `max_depth`
-
-### Streamlined Model Selection Rationale
-
-**Removed Models**: The following models were excluded to optimize runtime and focus on high-performing approaches:
-
-- **SVM**: Very slow, especially with hyperparameter tuning; rarely outperforms tree-based models on structured data
-- **KNN**: Slow at prediction time; usually not competitive for this task
-- **Neural Network (MLP)**: Slower than tree-based models; rarely beats XGBoost on tabular data
-- **LightGBM**: Redundant with XGBoost (very similar performance characteristics)
-- **Naive Bayes**: Usually underperforms on structured data compared to ensemble methods
-
-**Result**: Reduced from 9 to 4 models with minimal performance impact (~5x faster runtime) while maintaining algorithm diversity and competitive performance.
-
-### Model Training Approach
-
-- **All models** are trained on the same preprocessed training data
-- **Hyperparameter tuning** (optional): `RandomizedSearchCV` with 5-fold cross-validation
-- **Cross-validation** (optional): 5-fold CV for robust performance estimates
-- **Regularization**: Tree-based models (Random Forest, Gradient Boosting, XGBoost) have built-in regularization to prevent overfitting
-
-### Why These Models?
-
-1. **Coverage**: Linear and tree-based ensemble models covering different learning paradigms
-2. **Interpretability**: Logistic Regression, Random Forest provide feature importance
-3. **Performance**: Ensemble models deliver strong performance on structured data
-4. **Robustness**: Ensemble methods (Random Forest, Gradient Boosting, XGBoost) reduce overfitting
-5. **Efficiency**: Fast training and inference suitable for production environments
-6. **Baseline comparison**: Logistic Regression provides interpretable baseline performance
-
-### Model Selection and Evaluation Justification (The 4-Model Streamlined Approach)
-
-To ensure the final model delivered optimal performance for phishing detection while maintaining computational efficiency, I evaluated **four high-performing modeling approaches** selected from a broader initial exploration. This streamlined approach balances performance, interpretability, and runtime efficiency.
-
-#### 1. Exploration Summary
-
-The following table summarizes the selected models, showing key performance characteristics and rationale for inclusion:
-
-| Model       | Model Type          | Key Characteristics                            | Rationale for Inclusion                                                                         |
-| :---------- | :------------------ | :--------------------------------------------- | :---------------------------------------------------------------------------------------------- |
-| **Model 1** | Logistic Regression | Linear classifier, interpretable, fast         | Established baseline performance bar. Provides interpretable coefficients and fast predictions. |
-| **Model 2** | Random Forest       | Ensemble of decision trees, robust to outliers | Handles non-linear relationships and feature interactions. Provides feature importance scores.  |
-| **Model 3** | Gradient Boosting   | Sequential ensemble, strong performance        | Handles complex patterns through sequential learning. Good performance on structured data.      |
-| **Model 4** | XGBoost             | Optimized gradient boosting framework          | Strong performance on structured data. Handles missing values natively. Fast and scalable.      |
-
-**Note**: Five additional models (SVM, KNN, Naive Bayes, Neural Network, LightGBM) were evaluated but excluded from the final pipeline due to computational inefficiency, redundancy, or inferior performance on structured tabular data. This streamlined approach reduces runtime by ~5x while maintaining competitive performance.
-
-**Final Selection Process**: After comprehensive evaluation across 11 metrics, the best model is selected based on **Accuracy** (primary criterion), with secondary consideration given to **F1-Score**, **Balanced Accuracy**, and **MCC** to ensure robust performance across all evaluation dimensions.
-
-#### 2. Evaluation Metric Rationale
-
-While the pipeline calculates **11 comprehensive metrics** for thorough evaluation, the **primary selection criterion is Accuracy** because:
-
-1. **Balanced Dataset**: The phishing dataset is relatively balanced, making accuracy a reliable performance indicator
-2. **Comprehensive Secondary Metrics**: F1-Score, Balanced Accuracy, and MCC are also calculated to ensure the selected model performs well across different aspects:
-   - **F1-Score**: Balances precision and recall, important for phishing detection where both false positives and false negatives matter
-   - **Balanced Accuracy**: Accounts for class imbalance if present
-   - **MCC (Matthews Correlation Coefficient)**: Provides a balanced measure even with class imbalance
-
-**Note on F1-Score**: In phishing detection scenarios, **False Negatives (missing a phishing site)** are indeed more costly than False Positives. However, the dataset's balanced nature and the comprehensive metric suite ensure that models with high accuracy also maintain strong F1-Score performance, providing the optimal balance for production deployment.
-
-#### 3. Refinement Note on Model Selection
-
-During the initial exploration phase, an internal AI-assisted tooling suggestion favored a Random Forest implementation. However, a deeper analysis revealed potential data leakage artifacts tied to host providers (see EDA for details). I consultatively challenged this initial suggestion, as documented in my private working notes/IDE scratchpad[^1], advocating for a more robust Gradient Boosting approach (XGBoost) to ensure model predictions were based on genuine phishing indicators rather than data collection artifacts. The final pipeline reflects this defense of data integrity.
+For planning documentation and decision rationale, see [`docs/planning/`](docs/planning/).
 
 ---
 
-## h. Evaluation of Models Developed and Metrics Explanation
+## Future Improvements
 
-### Evaluation Metrics
+### Short-Term Enhancements
 
-The pipeline calculates **11 comprehensive metrics** for each model to provide a holistic view of performance:
+- **Model Interpretability**: Add SHAP value calculations and feature importance visualizations
+- **Advanced Evaluation**: Implement learning curves, calibration plots, and statistical significance testing
+- **Data Validation**: Add schema validation for input data and feature drift detection
+- **API Wrapper**: Create REST API endpoint for model inference (FastAPI/Flask)
+- **Docker Containerization**: Package pipeline in Docker for consistent deployment environments
 
-#### 1. Core Classification Metrics
+### Medium-Term Enhancements
 
-| Metric                       | Formula                                           | Interpretation                                | Good Performance |
-| ---------------------------- | ------------------------------------------------- | --------------------------------------------- | ---------------- |
-| **Accuracy**                 | `(TP + TN) / (TP + TN + FP + FN)`                 | Overall correctness                           | > 0.85 (85%)     |
-| **Precision**                | `TP / (TP + FP)`                                  | Of predicted positives, how many are correct? | > 0.80 (80%)     |
-| **Recall (Sensitivity/TPR)** | `TP / (TP + FN)`                                  | Of actual positives, how many are detected?   | > 0.80 (80%)     |
-| **F1-Score**                 | `2 × (Precision × Recall) / (Precision + Recall)` | Harmonic mean of precision and recall         | > 0.80 (80%)     |
+- **Model Monitoring**: Implement performance monitoring, drift detection, and automated retraining triggers
+- **A/B Testing Framework**: Support for comparing model versions in production
+- **Distributed Training**: Add support for distributed model training (Dask, Ray) for larger datasets
+- **Feature Store Integration**: Connect to feature store for production feature serving
+- **MLflow Integration**: Track experiments, model versions, and metrics in MLflow
 
-#### 2. Security-Focused Metrics
+### Long-Term Enhancements
 
-| Metric                        | Formula          | Interpretation                                              | Good Performance |
-| ----------------------------- | ---------------- | ----------------------------------------------------------- | ---------------- |
-| **Specificity (TNR)**         | `TN / (TN + FP)` | Of actual negatives, how many are correctly identified?     | > 0.80 (80%)     |
-| **False Positive Rate (FPR)** | `FP / (FP + TN)` | Rate of false alarms (legitimate sites flagged as phishing) | < 0.20 (20%)     |
-| **False Negative Rate (FNR)** | `FN / (FN + TP)` | Rate of missed phishing sites                               | < 0.20 (20%)     |
-
-#### 3. Balanced Metrics
-
-| Metric                                     | Formula                                             | Interpretation                                             | Good Performance |
-| ------------------------------------------ | --------------------------------------------------- | ---------------------------------------------------------- | ---------------- |
-| **Balanced Accuracy**                      | `(Recall + Specificity) / 2`                        | Average of sensitivity and specificity                     | > 0.80 (80%)     |
-| **Matthews Correlation Coefficient (MCC)** | `(TP×TN - FP×FN) / √((TP+FP)(TP+FN)(TN+FP)(TN+FN))` | Correlation between predicted and actual (range: -1 to +1) | > 0.50 (0.5)     |
-
-#### 4. Area Under Curve (AUC) Metrics
-
-| Metric      | Interpretation                    | Good Performance |
-| ----------- | --------------------------------- | ---------------- |
-| **ROC-AUC** | Area under ROC curve (TPR vs FPR) | > 0.85 (0.85)    |
-| **PR-AUC**  | Area under Precision-Recall curve | > 0.80 (0.80)    |
-
-### Metric Selection Rationale
-
-1. **Accuracy**: Overall performance, but can be misleading with class imbalance
-2. **Precision**: Important for reducing false alarms (legitimate sites flagged as phishing)
-3. **Recall**: Critical for security (minimizing missed phishing sites)
-4. **F1-Score**: Balances precision and recall
-5. **Specificity**: Important for user trust (minimizing false positives)
-6. **FPR/FNR**: Security-focused metrics (false alarms vs missed threats)
-7. **Balanced Accuracy**: Accounts for class imbalance
-8. **MCC**: Comprehensive metric considering all confusion matrix elements
-9. **ROC-AUC**: Overall discriminative ability (threshold-independent)
-10. **PR-AUC**: Better than ROC-AUC for imbalanced datasets
-
-### Model Evaluation Process
-
-1. **Test Set Predictions**: All models predict on the same held-out test set (20% of data)
-2. **Metric Calculation**: 11 metrics calculated for each model
-3. **Results Comparison**: Results compiled into a comparison table (sorted by accuracy)
-4. **Best Model Selection**: Model with highest accuracy selected as best model
-5. **Advanced Analysis**:
-   - **Statistical Testing**: Paired t-test comparing model performance (bootstrap sampling)
-   - **Learning Curves**: Visualize performance vs training set size
-   - **SHAP Values**: Feature importance and prediction interpretability
-
-### Evaluation Results Format
-
-The pipeline outputs:
-
-- **Results DataFrame**: All models with all metrics (sorted by accuracy)
-- **Best Model Summary**: Name, type, key metrics
-- **Classification Report**: Detailed precision, recall, F1-score per class
-- **Confusion Matrix**: Visual representation of predictions vs actual
-
-### Performance Thresholds
-
-Based on standard ML practice and domain-specific considerations:
-
-- **Excellent**: Accuracy > 0.90, ROC-AUC > 0.90, F1 > 0.85
-- **Good**: Accuracy > 0.85, ROC-AUC > 0.85, F1 > 0.80
-- **Acceptable**: Accuracy > 0.80, ROC-AUC > 0.80, F1 > 0.75
-- **Needs Improvement**: Below acceptable thresholds
+- **AutoML Integration**: Automated hyperparameter optimization and model selection
+- **Ensemble Methods**: Stacking and blending of multiple models for improved performance
+- **Real-Time Inference**: Stream processing capabilities for real-time phishing detection
+- **Multi-Class Extension**: Extend to multi-class classification (phishing types, severity levels)
+- **Active Learning**: Implement active learning for efficient model improvement with minimal labeled data
 
 ---
 
-## i. Other Considerations for Deploying the Models Developed
+## Documentation
 
-### 1. Model Monitoring and Maintenance
+Comprehensive documentation is available in the `docs/` directory:
 
-#### Performance Monitoring
-
-- **Drift Detection**: Monitor for data drift (feature distributions changing over time)
-- **Performance Degradation**: Track metrics (accuracy, precision, recall) over time
-- **Alerting**: Set up alerts for significant performance drops or anomalies
-
-#### Retraining Strategy
-
-- **Periodic Retraining**: Retrain models monthly/quarterly with new data
-- **Triggered Retraining**: Retrain when performance drops below threshold
-- **Version Control**: Track model versions, hyperparameters, and performance
-
-### 2. Scalability and Performance
-
-#### Production Considerations
-
-- **Latency Requirements**:
-  - Real-time prediction: < 100ms per prediction
-  - Batch prediction: Can handle larger latencies
-- **Throughput**:
-  - Handle concurrent requests (load balancing, horizontal scaling)
-  - Batch processing for bulk predictions
-- **Resource Usage**:
-  - Memory: Tree-based models (Random Forest, XGBoost) can be memory-intensive
-  - CPU: All selected models are efficient; tree-based models (Random Forest, XGBoost) are well-optimized for CPU
-
-#### Model Selection for Production
-
-- **Baseline Models**: Logistic Regression (fast inference, interpretable)
-- **Ensemble Models**: Random Forest, Gradient Boosting, XGBoost (excellent performance-speed trade-off)
-- **Model Efficiency**: All selected models have fast inference suitable for CPU deployment
-
-### 3. Model Interpretability and Explainability
-
-#### Feature Importance
-
-- **Tree-based models** (Random Forest, XGBoost) provide feature importance scores
-- **SHAP values** provide per-prediction feature contributions
-- **Logistic Regression** coefficients indicate feature direction and magnitude
-
-#### Explainability Requirements
-
-- **Regulatory Compliance**: May require explanations for predictions (e.g., GDPR, explainable AI)
-- **User Trust**: Users may want to understand why a site is flagged as phishing
-- **Debugging**: Interpretability helps identify model failures and biases
-
-### 4. Data Quality and Preprocessing
-
-#### Input Validation
-
-- **Feature Validation**: Check for missing values, data types, ranges
-- **Outlier Detection**: Flag extreme values that may indicate data quality issues
-- **Schema Validation**: Ensure input features match training schema
-
-#### Preprocessing Consistency
-
-- **Pipeline Persistence**: Save preprocessing pipeline (scalers, encoders) for production
-- **Feature Alignment**: Ensure production features match training features
-- **Missing Value Handling**: Consistent handling of missing values (median imputation, indicator variables)
-
-### 5. Security and Privacy
-
-#### Model Security
-
-- **Adversarial Attacks**: Phishing sites may try to evade detection (adversarial examples)
-- **Model Theft**: Protect model weights/parameters from extraction
-- **Input Sanitization**: Validate and sanitize inputs to prevent injection attacks
-
-#### Privacy Considerations
-
-- **Data Privacy**: Ensure compliance with data protection regulations (GDPR, PDPA)
-- **PII Handling**: Avoid storing or logging personally identifiable information
-- **Data Retention**: Define policies for data retention and deletion
-
-### 6. Error Handling and Robustness
-
-#### Error Scenarios
-
-- **Missing Features**: Handle cases where expected features are missing
-- **Invalid Inputs**: Validate inputs (data types, ranges, formats)
-- **Model Failures**: Graceful degradation (fallback to simpler model or manual review)
-
-#### Robustness Testing
-
-- **Edge Cases**: Test with extreme values, missing data, corrupted inputs
-- **Stress Testing**: Test under high load, concurrent requests
-- **Failover**: Implement fallback mechanisms for model failures
-
-### 7. Integration and Deployment
-
-#### API Design
-
-- **REST API**: Expose model as REST API endpoint
-- **Input Format**: JSON with feature values
-- **Output Format**: JSON with prediction, probability, and optional explanations
-
-#### Deployment Options
-
-- **Cloud Deployment**: AWS, GCP, Azure (scalable, managed infrastructure)
-- **On-Premise**: Deploy on internal servers (data privacy, compliance)
-- **Edge Deployment**: Deploy on edge devices (low latency, offline capability)
-
-#### CI/CD Pipeline
-
-- **Automated Testing**: Unit tests, integration tests, performance tests
-- **Model Validation**: Validate new models before deployment (performance, fairness)
-- **Rollback Strategy**: Ability to rollback to previous model version if issues arise
-
-### 8. Cost Considerations
-
-#### Infrastructure Costs
-
-- **Compute**: CPU/GPU costs for training and inference
-- **Storage**: Model storage, data storage, logs
-- **Network**: Data transfer costs (if using cloud)
-
-#### Model Complexity vs Cost
-
-- **Simple Models**: Lower compute costs, faster inference
-- **Complex Models**: Higher compute costs, potentially better performance
-- **Trade-off**: Balance model complexity with cost and performance requirements
-
-### 9. Fairness and Bias
-
-#### Bias Detection
-
-- **Group Fairness**: Evaluate performance across different groups (e.g., industries, hosting providers)
-- **Disparate Impact**: Check for disproportionate false positives/negatives across groups
-- **Fairness Metrics**: Calculate fairness metrics (equalized odds, demographic parity)
-
-#### Mitigation Strategies
-
-- **Fairness Constraints**: Incorporate fairness constraints during training
-- **Post-processing**: Adjust predictions to meet fairness requirements
-- **Data Balancing**: Ensure balanced representation in training data
-
-### 10. Documentation and Support
-
-#### Documentation
-
-- **API Documentation**: Clear API documentation with examples
-- **Model Cards**: Document model performance, limitations, intended use cases
-- **Runbooks**: Operational procedures for monitoring, troubleshooting, retraining
-
-#### Support
-
-- **Monitoring Dashboards**: Real-time dashboards for model performance, system health
-- **Alerting**: Automated alerts for anomalies, performance degradation
-- **Incident Response**: Procedures for handling model failures, data issues
+- **`docs/analysis/`**: Exploratory data analysis findings and insights
+- **`docs/architecture/`**: System design documentation and architecture decisions
+- **`docs/planning/`**: Project planning artifacts and requirements analysis
+- **`docs/qa/`**: Quality assurance documentation and testing strategies
 
 ---
 
-## Additional Notes
+## License
 
-### Dependencies
-
-All required Python packages are listed in `requirements.txt`. Key dependencies include:
-
-- `scikit-learn` (model training, evaluation, preprocessing)
-- `pandas`, `numpy` (data manipulation)
-- `xgboost` (optimized gradient boosting, strong performance)
-- `shap` (model interpretability)
-- `scipy` (statistical testing)
-- `pyyaml` (configuration file parsing)
-
-### Reproducibility
-
-- **Random Seed**: Set via `random_state` parameter (default: 42)
-- **Deterministic**: All models use random seeds for reproducibility
-- **Version Control**: Code and configuration files are version-controlled
-
-### Contact and Support
-
-For questions or issues, please refer to the code comments in each module or contact the project maintainer.
-Alternatively, you may reach out to me at andrew.yeo.mc@gmail.com
+This project is provided as-is for educational and demonstration purposes. Please refer to the repository's license file for specific terms and conditions.
 
 ---
 
-## Footnote
+## Contact
 
-[^1]: **Development Notebook (`mlp.ipynb`)**: During the development process, a comprehensive self-assessment notebook (`mlp.ipynb`) was used to evaluate the MLP implementation against Task 2 requirements before converting to the modular pipeline structure. This notebook contains detailed analysis, model exploration notes, and the decision-making process documented in the refinement note above. The notebook is not included in this submission but is available upon request for reviewers interested in understanding the complete development workflow and iterative refinement process.
+For questions, issues, or contributions, please contact the project maintainer or open an issue in the repository.
 
-Thank you for your time and consideration in reviewing this submission.
+---
+
+**Built with**: Python 3.7+, scikit-learn, XGBoost, pandas, numpy, and modern ML engineering practices.

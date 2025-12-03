@@ -1,8 +1,10 @@
 """
-Main Pipeline Entry Point
+Main Pipeline Entry Point.
 
-This is the main executable module for the Machine Learning Pipeline (MLP).
-It orchestrates the entire pipeline from data loading to model evaluation.
+This module provides the primary executable entry point for the phishing
+classification machine learning pipeline. It orchestrates the full lifecycle
+from data loading and preprocessing through model training, evaluation, and
+optional persistence, using a configuration-driven design.
 
 Usage:
     python3 src/pipeline.py --config config.yaml
@@ -58,7 +60,7 @@ class MLPipeline:
         4. Train models
         5. Evaluate models
         6. Compare and select best model
-        7. Generate final assessment
+        7. Perform final validation and reporting
         """
         if self.verbose:
             print("\n" + "=" * 70)
@@ -125,9 +127,9 @@ class MLPipeline:
             results_df = evaluator.create_results_dataframe()
             best_model_name, best_model, best_results = evaluator.select_best_model(trained_models)
             
-            # Step 7: Final Assessment
+            # Step 7: Final validation and reporting
             if self.verbose:
-                print("\n[Step 7/7] Generating final assessment...")
+                print("\n[Step 7/7] Generating final validation and reporting...")
             classification_report = evaluator.get_classification_report(y_test)
             
             # Step 8: Save Models (Optional - if enabled in config)

@@ -64,3 +64,6 @@ results/artifacts/*
 
 # DO NOT exclude documentation or tests anymore
 
+
+# OpenMemory - IDE/Assistant specific rules
+.cursor/rules/openmemory.mdc

@@ -1,81 +1,66 @@
-# Data files - DO NOT commit phishing.db
-data/phishing.db
-*.db
-*.sqlite
-*.sqlite3
-
-# Python
+# ------------------------------
+# Python & Virtual Environments
+# ------------------------------
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.pyd
 *.so
-.Python
+
 env/
 venv/
 ENV/
 .venv/
-*.pyc
-*.pyo
-*.pyd
+.Python
 
-# Jupyter Notebook checkpoints (keep the notebook itself)
+# ------------------------------
+# Jupyter Notebook checkpoints
+# ------------------------------
 .ipynb_checkpoints/
 
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# macOS
+# ------------------------------
+# OS / Editor / Temp Files
+# ------------------------------
 .DS_Store
-
-# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 
+# ------------------------------
 # Environment variables
+# ------------------------------
 .env
-.env.local
+.env.*
 
+# ------------------------------
+# Model Artifacts (optional)
+# ------------------------------
+results/artifacts/*
+!results/artifacts/.keep
 
-# OpenMemory - IDE/Assistant specific rules
-.cursor/rules/openmemory.mdc
+# ------------------------------
+# Logs (optional – keep if useful)
+# Uncomment to ignore logs:
+# results/logs/*
+# ------------------------------
 
-# Assessment and analysis reports (not required for submission)
-*_ASSESSMENT.md
-*_REPORT.md
-*_ANALYSIS.md
-*_RESULTS.md
-*_TEST*.md
-SUBMISSION_*.md
-TASK*.md
-BRUTAL_*.md
-AIAP_*.md
-ASSESSMENT_*.md
-PIPELINE_*.md
-PERFECT_*.md
-100_PERCENT_*.md
+# ------------------------------
+# Datasets / Large binaries
+# ------------------------------
+*.db
+*.sqlite
+*.sqlite3
 
-# Development notebooks (mlp.ipynb excluded - MLP is in src/ modules)
-mlp.ipynb
+# Keep demo database
+!data/demo_phishdata.db
 
-# Memory and documentation files
-openmemory.md
+# ------------------------------
+# Project-specific exclusions
+# ------------------------------
 
-# Internal documentation
-src/MODULE_STRUCTURE.md
+# Cursor AI artifacts (if any)
+.cursor/
 
-# Test files
-tests/
+# DO NOT exclude documentation or tests anymore
 
-# Pipeline execution logs and output files
-results/*.log
-results/pipeline_execution_*.txt
-results/pipeline_execution_*.plain.txt
-results/pipeline_output_*.txt
-results/pipeline_output_*.plain.txt
-results/pipeline_output_*.md
-
-# Helper scripts and documentation (not required for submission)
-save_output.sh
-SAVE_OUTPUT_OPTIONS.md

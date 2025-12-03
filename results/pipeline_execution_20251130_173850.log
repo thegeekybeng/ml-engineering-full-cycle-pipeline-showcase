@@ -1,0 +1,365 @@
+======================================================================
+MACHINE LEARNING PIPELINE INITIALIZED
+======================================================================
+Config loaded: 7 sections
+Database URL: https://techassessment.blob.core.windows.net/aiap22-assessment-data/phishing.db
+Test Size: 0.2
+Random State: 42
+Enabled Models: 4 models
+======================================================================
+
+======================================================================
+PIPELINE EXECUTION STARTED
+======================================================================
+
+[Step 1/7] Loading data from SQLite database...
+======================================================================
+STEP 2: Loading Dataset
+======================================================================
+✓ Using existing database file
+📊 Table name: phishing_data
+✓ Removed index column (Unnamed: 0)
+
+📈 Dataset Summary:
+   • Shape: 10,500 samples × 15 features
+   • Features: 14
+======================================================================
+======================================================================
+STEP 3: Feature and Target Separation
+======================================================================
+
+📊 Features Summary:
+   • Shape: 10,500 samples × 14 features
+   • Feature columns: 14
+======================================================================
+======================================================================
+HANDLING MISSING VALUES
+======================================================================
+
+📊 Columns with missing values: 1
+   • LineOfCode: 2,355 (22.43%)
+
+✓ Created LineOfCode_Missing indicator variable
+✓ Imputed LineOfCode with median: 620.00
+
+✓ Missing value handling complete
+======================================================================
+======================================================================
+FEATURE TYPE IDENTIFICATION
+======================================================================
+
+📊 Categorical Features (2):
+   • Industry
+   • HostingProvider
+
+📊 Numerical Features (13):
+   • LineOfCode
+   • LargestLineLength
+   • NoOfURLRedirect
+   • NoOfSelfRedirect
+   • NoOfPopup
+   • NoOfiFrame
+   • NoOfImage
+   • NoOfSelfRef
+   • NoOfExternalRef
+   • Robots
+   • IsResponsive
+   • DomainAgeMonths
+   • LineOfCode_Missing
+
+📈 Categorical Feature Cardinality:
+
+   Industry:
+      • Unique values: 11
+      • Top 5 categories: ['eCommerce', 'Non-profit', 'Education', 'Unknown', 'Fashion']
+
+   HostingProvider:
+      • Unique values: 13
+      • Top 5 categories: ['Unknown Provider', 'GoDaddy', 'Bluehost', 'HostGator', 'Freehostia']
+======================================================================
+   ✓ Data loaded: 10,500 samples, 15 features
+   ✓ Numerical features: 13
+   ✓ Categorical features: 2
+
+[Step 2/7] Preprocessing data and splitting into train/test sets...
+======================================================================
+STEP 4: Train-Test Split
+======================================================================
+
+📊 Dataset Split:
+   • Training set: 8,400 samples (80.0%)
+   • Test set: 2,100 samples (20.0%)
+
+📈 Training Set Class Distribution:
+   • Legitimate (1): 4,623 (55.04%)
+   • Phishing (0): 3,777 (44.96%)
+
+📈 Test Set Class Distribution:
+   • Legitimate (1): 1,156 (55.05%)
+   • Phishing (0): 944 (44.95%)
+
+✓ Data split complete with stratification
+======================================================================
+======================================================================
+PREPROCESSING PIPELINE CREATED
+======================================================================
+✓ Pipeline Components:
+   • Numerical features (13): RobustScaler (robust to outliers)
+   • Categorical features (2): OneHotEncoder (drop='first')
+======================================================================
+
+✓ Preprocessing applied to training data
+   Original shape: (8400, 15)
+   Transformed shape: (8400, 35)
+✓ Preprocessing applied to data
+   Original shape: (2100, 15)
+   Transformed shape: (2100, 35)
+   ✓ Preprocessing complete
+   ✓ Training shape: (8400, 35)
+   ✓ Test shape: (2100, 35)
+
+[Step 4/7] Training models...
+======================================================================
+STEP 5: MODEL DEFINITIONS
+======================================================================
+
+📊 Creating 4 models...
+   ✓ Logistic Regression: LogisticRegression
+   ✓ Random Forest: RandomForestClassifier
+   ✓ Gradient Boosting: GradientBoostingClassifier
+   ✓ XGBoost: XGBClassifier
+======================================================================
+======================================================================
+TRAINING MACHINE LEARNING MODELS
+======================================================================
+
+📚 Training Process Explanation:
+----------------------------------------------------------------------
+
+Different models use different training approaches:
+
+1. **Logistic Regression**:
+   • Uses iterations (max_iter=1000) until convergence
+   • Automatically stops when loss converges
+   • Linear classifier, interpretable, fast baseline
+
+2. **Random Forest**:
+   • Builds multiple trees independently (n_estimators=100)
+   • No iterative refinement needed
+   • Parallel tree construction, robust to outliers
+
+3. **Gradient Boosting**:
+   • Uses boosting rounds (n_estimators=100)
+   • Sequentially builds trees/estimators
+   • Each tree corrects errors of previous trees
+
+4. **XGBoost**:
+   • Optimized gradient boosting with regularization
+   • Uses boosting rounds (n_estimators=100)
+   • Handles missing values natively, fast and scalable
+
+
+⚙️  Hyperparameter tuning: ENABLED
+   Method: RandomizedSearchCV
+   Iterations: 50
+   CV folds: 5
+
+[1/4] Training Logistic Regression...
+   🔍 Performing hyperparameter tuning (n_iter=50, cv=5)...
+   ✓ Best CV score: 0.8462
+   ✓ Best parameters: {'C': np.float64(1.5409457762881555), 'max_iter': 3000, 'solver': 'lbfgs'}
+   • Iterations to convergence: [array([191], dtype=int32)]
+   ✓ Training completed successfully
+
+[2/4] Training Random Forest...
+   🔍 Performing hyperparameter tuning (n_iter=50, cv=5)...
+   ✓ Best CV score: 0.8545
+   ✓ Best parameters: {'max_depth': 10, 'max_features': 'log2', 'min_samples_leaf': 2, 'min_samples_split': 7, 'n_estimators': 277}
+   ✓ Training completed successfully
+
+[3/4] Training Gradient Boosting...
+   🔍 Performing hyperparameter tuning (n_iter=50, cv=5)...
+   ✓ Best CV score: 0.8540
+   ✓ Best parameters: {'learning_rate': np.float64(0.062009396052331626), 'max_depth': 3, 'min_samples_leaf': 4, 'min_samples_split': 3, 'n_estimators': 153}
+   ✓ Training completed successfully
+
+[4/4] Training XGBoost...
+   🔍 Performing hyperparameter tuning (n_iter=50, cv=5)...
+   ✓ Best CV score: 0.8555
+   ✓ Best parameters: {'colsample_bytree': np.float64(0.8285733635843882), 'learning_rate': np.float64(0.14763327094232792), 'max_depth': 3, 'n_estimators': 101, 'subsample': np.float64(0.944399754453365)}
+   ✓ Training completed successfully
+
+======================================================================
+✓ Training completed: 4/4 models trained successfully
+======================================================================
+   ✓ Models trained: 4
+
+[Step 5/7] Evaluating models...
+======================================================================
+STEP 6: MODEL EVALUATION
+======================================================================
+
+[1/4] Evaluating Logistic Regression...
+   📊 Core Metrics:
+      • Accuracy:  0.8305 (83.05%)
+      • Precision: 0.8466 (84.66%)
+      • Recall:    0.8452 (84.52%)
+      • F1-Score:  0.8459 (84.59%)
+   🔒 Security Metrics:
+      • Specificity: 0.8125 (81.25%)
+      • FPR:         0.1875 (18.75%)
+      • FNR:         0.1548 (15.48%)
+   ⚖️  Balanced Metrics:
+      • Balanced Acc: 0.8288 (82.88%)
+      • MCC:          0.6575
+   📈 AUC Metrics:
+      • ROC-AUC:      0.8910
+      • PR-AUC:       0.8706
+
+[2/4] Evaluating Random Forest...
+   📊 Core Metrics:
+      • Accuracy:  0.8386 (83.86%)
+      • Precision: 0.8731 (87.31%)
+      • Recall:    0.8270 (82.70%)
+      • F1-Score:  0.8494 (84.94%)
+   🔒 Security Metrics:
+      • Specificity: 0.8528 (85.28%)
+      • FPR:         0.1472 (14.72%)
+      • FNR:         0.1730 (17.30%)
+   ⚖️  Balanced Metrics:
+      • Balanced Acc: 0.8399 (83.99%)
+      • MCC:          0.6769
+   📈 AUC Metrics:
+      • ROC-AUC:      0.8910
+      • PR-AUC:       0.8704
+
+[3/4] Evaluating Gradient Boosting...
+   📊 Core Metrics:
+      • Accuracy:  0.8381 (83.81%)
+      • Precision: 0.8696 (86.96%)
+      • Recall:    0.8304 (83.04%)
+      • F1-Score:  0.8496 (84.96%)
+   🔒 Security Metrics:
+      • Specificity: 0.8475 (84.75%)
+      • FPR:         0.1525 (15.25%)
+      • FNR:         0.1696 (16.96%)
+   ⚖️  Balanced Metrics:
+      • Balanced Acc: 0.8390 (83.90%)
+      • MCC:          0.6753
+   📈 AUC Metrics:
+      • ROC-AUC:      0.8898
+      • PR-AUC:       0.8644
+
+[4/4] Evaluating XGBoost...
+   📊 Core Metrics:
+      • Accuracy:  0.8390 (83.90%)
+      • Precision: 0.8711 (87.11%)
+      • Recall:    0.8304 (83.04%)
+      • F1-Score:  0.8503 (85.03%)
+   🔒 Security Metrics:
+      • Specificity: 0.8496 (84.96%)
+      • FPR:         0.1504 (15.04%)
+      • FNR:         0.1696 (16.96%)
+   ⚖️  Balanced Metrics:
+      • Balanced Acc: 0.8400 (84.00%)
+      • MCC:          0.6774
+   📈 AUC Metrics:
+      • ROC-AUC:      0.8857
+      • PR-AUC:       0.8630
+
+======================================================================
+
+[Step 6/7] Comparing models and selecting best...
+======================================================================
+MODEL COMPARISON TABLE - COMPREHENSIVE METRICS
+======================================================================
+
+📊 Core Metrics (Accuracy, Precision, Recall, F1-Score):
+                     accuracy  precision  recall      f1
+XGBoost                0.8390     0.8711  0.8304  0.8503
+Random Forest          0.8386     0.8731  0.8270  0.8494
+Gradient Boosting      0.8381     0.8696  0.8304  0.8496
+Logistic Regression    0.8305     0.8466  0.8452  0.8459
+
+🔒 Security Metrics (Specificity, FPR, FNR):
+                     specificity     fpr     fnr
+XGBoost                   0.8496  0.1504  0.1696
+Random Forest             0.8528  0.1472  0.1730
+Gradient Boosting         0.8475  0.1525  0.1696
+Logistic Regression       0.8125  0.1875  0.1548
+
+⚖️  Balanced Metrics (Balanced Accuracy, MCC):
+                     balanced_accuracy     mcc
+XGBoost                         0.8400  0.6774
+Random Forest                   0.8399  0.6769
+Gradient Boosting               0.8390  0.6753
+Logistic Regression             0.8288  0.6575
+
+📈 AUC Metrics (ROC-AUC, PR-AUC):
+                     roc_auc  pr_auc
+XGBoost               0.8857  0.8630
+Random Forest         0.8910  0.8704
+Gradient Boosting     0.8898  0.8644
+Logistic Regression   0.8910  0.8706
+======================================================================
+======================================================================
+STEP 7: BEST MODEL SELECTION
+======================================================================
+
+📊 Selection Method: Comprehensive evaluation across all metrics
+   Primary criterion: Accuracy (highest: XGBoost)
+   Secondary: Balanced performance across precision, recall, and security metrics
+
+🏆 Best Model: XGBoost
+   Model Type: XGBClassifier
+   Number of Estimators: 101
+
+📊 Core Performance Metrics:
+   • Accuracy:  0.8390 (83.90%)
+   • Precision: 0.8711 (87.11%)
+   • Recall:    0.8304 (83.04%)
+   • F1-Score:  0.8503 (85.03%)
+
+🔒 Security-Focused Metrics:
+   • Specificity: 0.8496 (84.96%)
+   • FPR:         0.1504 (15.04%)
+   • FNR:         0.1696 (16.96%)
+
+⚖️  Balanced Metrics:
+   • Balanced Acc: 0.8400 (84.00%)
+   • MCC:          0.6774
+
+📈 AUC Metrics:
+   • ROC-AUC:      0.8857 (88.57%)
+   • PR-AUC:       0.8630 (86.30%)
+
+======================================================================
+
+[Step 7/7] Generating final assessment...
+
+======================================================================
+DETAILED CLASSIFICATION REPORT: XGBoost
+======================================================================
+
+              precision    recall  f1-score   support
+
+    Phishing       0.80      0.85      0.83       944
+  Legitimate       0.87      0.83      0.85      1156
+
+    accuracy                           0.84      2100
+   macro avg       0.84      0.84      0.84      2100
+weighted avg       0.84      0.84      0.84      2100
+
+======================================================================
+
+======================================================================
+PIPELINE EXECUTION COMPLETED
+======================================================================
+
+✅ Machine Learning Pipeline completed successfully!
+   • Data loaded and preprocessed
+   • 4 models trained
+   • All models evaluated with comprehensive metrics
+   • Best model selected: XGBoost
+   • Best accuracy: 83.90%
+======================================================================

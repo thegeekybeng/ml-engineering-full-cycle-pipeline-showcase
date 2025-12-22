@@ -9,7 +9,7 @@ on:
 jobs:
   build-and-run:
     # THIS IS THE KEY: Tell GitHub to look for your NAS
-    runs-on: [self-hosted, nas-edge-runner]
+    runs-on: [self-hosted, nas-edge]
 
     steps:
     - name: Checkout Code

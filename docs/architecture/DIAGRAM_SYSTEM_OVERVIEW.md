@@ -128,5 +128,3 @@ sequenceDiagram
 ```
 
 All diagrams assume a **config-driven pipeline** where behavior is controlled via `config/config.yaml` and optionally overridden by environment variables or CLI arguments.
-
-
